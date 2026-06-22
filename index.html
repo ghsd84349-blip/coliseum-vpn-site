@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coliseum VPN — Панель управления</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         
         body {
             background-color: #070709;
@@ -15,7 +15,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            overflow-hidden: hidden;
+            overflow: hidden; /* Запрещаем скролл всего тела */
         }
 
         /* Шапка сайта */
@@ -28,25 +28,30 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             background: rgba(11, 11, 14, 0.5);
             backdrop-filter: blur(10px);
+            z-index: 5;
         }
 
-        .logo { font-size: 22px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+        .logo { font-size: 22px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; user-select: none;}
         .logo span { color: #CCFF00; }
 
-        /* Кнопка Плюсик для конфигураций */
+        /* Кнопка Плюсик для конфигураций — ИСПРАВЛЕНО ВЫРАВНИВАНИЕ */
         .add-config-btn {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: 300;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Центрирование по горизонтали */
+            line-height: 1; /* Обнуление межстрочного интервала */
             cursor: pointer;
             transition: 0.3s;
+            user-select: none;
+            padding-bottom: 4px; /* Микро-коррекция для идеального центра */
         }
         .add-config-btn:hover {
             background: #CCFF00;
@@ -65,20 +70,24 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
         }
 
         /* ЭКРАН 1: ГЛАВНОЕ МЕНЮ */
         .screen {
             width: 100%;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: absolute;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .status-container { text-align: center; margin-bottom: 30px; }
-        .status-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #88888e; margin-bottom: 10px; }
-        .status-current { font-size: 32px; font-weight: 700; }
+        .status-container { text-align: center; margin-bottom: 30px; user-select: none;}
+        .status-title { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #88888e; margin-bottom: 10px; }
+        .status-current { font-size: 32px; font-weight: 700; transition: color 0.3s;}
         .config-sub { font-size: 14px; color: #88888e; margin-top: 5px; }
 
         .power-button {
@@ -93,9 +102,10 @@
             text-transform: uppercase;
             cursor: pointer;
             transition: all 0.4s ease;
-            outline: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .power-button:hover { transform: scale(1.02); }
+        .power-button:hover { transform: scale(1.02); background: #16161b; }
+        .power-button:active { transform: scale(0.98); }
 
         .timer-display {
             font-size: 40px;
@@ -103,9 +113,11 @@
             margin-top: 20px;
             color: #ffffff;
             opacity: 0;
+            transition: opacity 0.3s ease;
+            user-select: none;
         }
 
-        /* Сетка Трафика (Получено / Отправлено) */
+        /* Сетка Трафика */
         .traffic-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -120,19 +132,21 @@
             padding: 15px;
             border-radius: 12px;
             text-align: center;
+            user-select: none;
         }
-        .traffic-label { font-size: 11px; color: #88888e; text-transform: uppercase; margin-bottom: 5px; }
+        .traffic-label { font-size: 11px; color: #88888e; text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
         .traffic-value { font-size: 18px; font-weight: 600; color: #ffffff; }
 
         /* ЭКРАН 2: НАСТРОЙКИ */
-        .hidden { display: none !important; }
+        .hidden { display: none !important; opacity: 0; transform: translateY(10px); }
         .settings-list {
             width: 100%;
             max-width: 500px;
             background: #111115;
             border-radius: 16px;
             border: 1px solid #222227;
-            padding: 10px 0;
+            padding: 5px 0;
+            user-select: none;
         }
         .settings-item {
             padding: 18px 20px;
@@ -145,41 +159,70 @@
         }
         .settings-item:last-child { border-bottom: none; }
         .settings-item:hover { background: rgba(255,255,255,0.02); }
+        .settings-item .arrow { color: #444; font-size: 18px; font-weight: 300;}
         .settings-item.danger { color: #ff3333; }
 
-        /* Окно добавления конфигурации (Модальное) */
+        /* ОБЩИЙ СТИЛЬ ДЛЯ МОДАЛЬНЫХ ОКОН (Конфиг и Тексты) */
         .modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
+        .modal.open { opacity: 1; visibility: visible; }
+        
         .modal-content {
             background: #111115;
             border: 1px solid #222227;
             padding: 30px;
-            border-radius: 20px;
+            border-radius: 24px;
             width: 90%;
             max-width: 400px;
             text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
         }
-        .modal-content h3 { margin-bottom: 10px; font-size: 20px; text-transform: uppercase; color: #CCFF00; }
-        .modal-content p { font-size: 14px; color: #88888e; margin-bottom: 20px; }
+        .modal.open .modal-content { transform: scale(1); }
+
+        .modal-content h3 { margin-bottom: 10px; font-size: 20px; text-transform: uppercase; color: #CCFF00; letter-spacing: 1px; }
+        .modal-content p { font-size: 14px; color: #88888e; margin-bottom: 20px; line-height: 1.5; }
+        
+        /* Поле ввода для конфига */
         .modal-content input {
-            width: 100%; padding: 12px; background: #1a1a1f; border: 1px solid #222227;
-            border-radius: 8px; color: #fff; font-size: 14px; margin-bottom: 20px; outline: none;
+            width: 100%; padding: 14px; background: #1a1a1f; border: 1px solid #222227;
+            border-radius: 10px; color: #fff; font-size: 14px; margin-bottom: 20px;
         }
         .modal-content input:focus { border-color: #CCFF00; }
+        
+        /* Текстовый блок для политик (со скроллом) */
+        .policy-text {
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #cccccc;
+            line-height: 1.6;
+        }
+        .policy-text::-webkit-scrollbar { width: 4px; }
+        .policy-text::-webkit-scrollbar-thumb { background: #222227; border-radius: 2px; }
+
         .modal-actions { display: flex; gap: 10px; }
         .modal-btn {
-            flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px;
+            flex: 1; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 14px; text-transform: uppercase; transition: 0.2s;
         }
         .btn-confirm { background: #CCFF00; color: #000; }
+        .btn-confirm:hover { background: #ddff33; }
         .btn-cancel { background: #222227; color: #fff; }
+        .btn-cancel:hover { background: #2a2a30; }
 
         /* Нижнее меню вкладок */
         nav.bottom-nav {
@@ -189,17 +232,20 @@
             display: flex;
             justify-content: center;
             gap: 60px;
-            padding: 15px 0;
+            padding: 18px 0;
+            z-index: 5;
+            user-select: none;
         }
         .nav-item {
-            background: none; border: none; color: #88888e; font-size: 14px;
-            font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s;
+            background: none; border: none; color: #55555e; font-size: 14px;
+            font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; transition: 0.3s;
         }
-        .nav-item.active { color: #CCFF00; }
+        .nav-item.active { color: #CCFF00; text-shadow: 0 0 15px rgba(204,255,0,0.5); }
 
         /* Стили активного состояния VPN */
         body.connected-state { background: radial-gradient(circle at center, #0e1405 0%, #070709 100%); }
-        body.connected-state .power-button { border-color: #CCFF00; box-shadow: 0 0 40px rgba(204, 255, 0, 0.3); color: #CCFF00; }
+        body.connected-state .power-button { border-color: #CCFF00; box-shadow: 0 0 50px rgba(204, 255, 0, 0.4); color: #CCFF00; }
+        body.connected-state .status-current { color: #CCFF00; text-shadow: 0 0 15px rgba(204,255,0,0.3); }
         body.connected-state .timer-display { opacity: 1; }
     </style>
 </head>
@@ -207,7 +253,7 @@
 
     <header>
         <div class="logo">COLISEUM<span>VPN</span></div>
-        <div class="add-config-btn" id="openModalBtn">+</div>
+        <div class="add-config-btn" id="openConfigModalBtn">+</div>
     </header>
 
     <div class="content-wrapper">
@@ -239,31 +285,74 @@
                 <div class="status-title">Настройки</div>
             </div>
             <div class="settings-list">
-                <div class="settings-item" onclick="alert('Coliseum VPN v1.0.0 — Разработано для портфолио.')">
-                    <span>О приложении</span><span>›</span>
+                <div class="settings-item" id="openAboutBtn">
+                    <span>О приложении</span><span class="arrow">›</span>
                 </div>
-                <div class="settings-item" onclick="alert('Ваш трафик полностью зашифрован. Мы не собираем логи.')">
-                    <span>Приватность</span><span>›</span>
+                <div class="settings-item" id="openPrivacyBtn">
+                    <span>Приватность</span><span class="arrow">›</span>
                 </div>
-                <div class="settings-item" onclick="alert('Использование сервиса разрешено исключительно в целях тестирования.')">
-                    <span>Условия использования</span><span>›</span>
+                <div class="settings-item" id="openTermsBtn">
+                    <span>Условия использования</span><span class="arrow">›</span>
                 </div>
                 <div class="settings-item danger" id="resetConfigBtn">
-                    <span>Сбросить конфигурацию</span><span>↺</span>
+                    <span>Сбросить конфигурацию</span><span class="arrow">↺</span>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <div class="modal hidden" id="configModal">
+    <div class="modal" id="configModal">
         <div class="modal-content">
             <h3>Конфигурация</h3>
-            <p>Вставьте ссылку сервера ниже:</p>
-            <input type="text" id="configUrlInput" placeholder="vless:// или wireguard://...">
+            <p>Вставьте ссылку доступа (vless://, wireguard://) или JSON-конфигурацию сервера ниже:</p>
+            <input type="text" id="configUrlInput" placeholder="Вставьте ссылку сервера...">
             <div class="modal-actions">
-                <button class="modal-btn btn-cancel" id="closeModalBtn">Отмена</button>
+                <button class="modal-btn btn-cancel" onclick="closeModal('configModal')">Отмена</button>
                 <button class="modal-btn btn-confirm" id="saveConfigBtn">Добавить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="aboutModal">
+        <div class="modal-content">
+            <h3>Coliseum VPN</h3>
+            <p style="color: #fff; font-size: 16px;">Версия 1.0.0 (Gold Master)</p>
+            <p>Ультимативный VPN-клиент нового поколения. Разработано для обеспечения максимальной скорости доступа и шифрования трафика в рамках экосистемы Coliseum Arena.</p>
+            <div class="modal-actions">
+                <button class="modal-btn btn-confirm" onclick="closeModal('aboutModal')">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="privacyModal">
+        <div class="modal-content">
+            <h3>Приватность</h3>
+            <div class="policy-text">
+                <strong>Ваша безопасность — наш приоритет.</strong><br><br>
+                1. <strong>Политика отсутствия логов:</strong> Coliseum VPN строго придерживается политики No-Logs. Мы не собираем, не храним и не передаем третьим лицам информацию о вашей сетевой активности, IP-адресах, посещенных сайтах или использованном трафике.<br><br>
+                2. <strong>Шифрование трафика:</strong> Весь входящий и исходящий трафик шифруется с использованием современных криптографических протоколов (включая WireGuard) на пути от вашего устройства до VPN-сервера.<br><br>
+                3. <strong>Анонимность:</strong> При подключении ваш реальный IP-адрес заменяется IP-адресом сервера Coliseum VPN, что обеспечивает анонимность в сети.<br><br>
+                Ваши данные защищены на уровне ядра протокола.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-confirm" onclick="closeModal('privacyModal')">Принимаю</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="termsModal">
+        <div class="modal-content">
+            <h3>Условия</h3>
+            <div class="policy-text">
+                <strong>Правила использования сервиса.</strong><br><br>
+                Для работы Coliseum VPN необходимо установить и активировать действительную конфигурацию сервера (полученную от администратора Coliseum Arena).<br><br>
+                Используя данное приложение, вы обязуетесь не использовать сервис для совершения противоправных действий, нарушения авторских прав или массовой рассылки спама.<br><br>
+                Сервис предоставляется "как есть". Coliseum Arena не несет ответственности за временные перебои в работе сервера или потерю скорости, связанные с качеством вашего интернет-соединения.<br><br>
+                Установка конфигурации означает ваше согласие с данными условиями.
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn btn-confirm" onclick="closeModal('termsModal')">Согласен</button>
             </div>
         </div>
     </div>
@@ -274,14 +363,15 @@
     </nav>
 
     <script>
-        // Элементы интерфейса
-        const vpnButton = document.getElementById('vpnButton');
+        // Элементы
         const body = document.body;
+        const vpnButton = document.getElementById('vpnButton');
         const statusText = document.getElementById('statusText');
         const timerDisplay = document.getElementById('timer');
         const receivedText = document.getElementById('receivedText');
         const sentText = document.getElementById('sentText');
         const currentConfigName = document.getElementById('currentConfigName');
+        const configUrlInput = document.getElementById('configUrlInput');
         
         // Вкладки
         const tabMain = document.getElementById('tabMain');
@@ -289,14 +379,7 @@
         const mainScreen = document.getElementById('mainScreen');
         const settingsScreen = document.getElementById('settingsScreen');
 
-        // Модалка
-        const configModal = document.getElementById('configModal');
-        const openModalBtn = document.getElementById('openModalBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const saveConfigBtn = document.getElementById('saveConfigBtn');
-        const configUrlInput = document.getElementById('configUrlInput');
-        const resetConfigBtn = document.getElementById('resetConfigBtn');
-
+        // Логика VPN (Таймер и Трафик)
         let isConnected = false;
         let timerInterval = null;
         let trafficInterval = null;
@@ -304,35 +387,6 @@
         let bytesReceived = 0;
         let bytesSent = 0;
 
-        // Переключение вкладок
-        tabMain.addEventListener('click', () => {
-            tabMain.classList.add('active'); tabSettings.classList.remove('active');
-            mainScreen.classList.remove('hidden'); settingsScreen.classList.add('hidden');
-        });
-        tabSettings.addEventListener('click', () => {
-            tabSettings.classList.add('active'); tabMain.classList.remove('active');
-            settingsScreen.classList.remove('hidden'); mainScreen.classList.add('hidden');
-        });
-
-        // Модальное окно конфигураций
-        openModalBtn.addEventListener('click', () => configModal.classList.remove('hidden'));
-        closeModalBtn.addEventListener('click', () => { configModal.classList.add('hidden'); configUrlInput.value = ''; });
-        
-        saveConfigBtn.addEventListener('click', () => {
-            if(configUrlInput.value.trim() !== "") {
-                currentConfigName.innerText = "Пользовательская ссылка: " + configUrlInput.value.substring(0, 20) + "...";
-                alert("Новая конфигурация успешно применена!");
-            }
-            configModal.classList.add('hidden');
-            configUrlInput.value = '';
-        });
-
-        resetConfigBtn.addEventListener('click', () => {
-            currentConfigName.innerText = "Базовая конфигурация";
-            alert("Конфигурация сброшена до начальной.");
-        });
-
-        // Форматирование трафика (КБ / МБ)
         function formatTraffic(bytes) {
             if (bytes < 1024) return bytes + " Б";
             let kb = bytes / 1024;
@@ -341,23 +395,15 @@
             return mb.toFixed(2) + " МБ";
         }
 
-        // Логика работы VPN и трафика
         vpnButton.addEventListener('click', () => {
             isConnected = !isConnected;
-
             if (isConnected) {
                 body.classList.add('connected-state');
-                statusText.style.color = '#CCFF00';
                 statusText.innerText = 'ПОДКЛЮЧЕНО';
                 vpnButton.innerText = 'Выключить';
-                
-                // Сброс таймера и трафика при старте
-                seconds = 0;
-                bytesReceived = 0;
-                bytesSent = 0;
+                seconds = 0; bytesReceived = 0; bytesSent = 0;
                 timerDisplay.innerText = "00:00:00";
                 
-                // Запуск симуляции
                 timerInterval = setInterval(() => {
                     seconds++;
                     let hrs = Math.floor(seconds / 3600);
@@ -367,22 +413,54 @@
                 }, 1000);
 
                 trafficInterval = setInterval(() => {
-                    // Скорость имитирует скачивание файлов случайными порциями
-                    bytesReceived += Math.floor(Math.random() * 350000) + 50000;
-                    bytesSent += Math.floor(Math.random() * 40000) + 5000;
+                    bytesReceived += Math.floor(Math.random() * 450000) + 50000;
+                    bytesSent += Math.floor(Math.random() * 50000) + 5000;
                     receivedText.innerText = formatTraffic(bytesReceived);
                     sentText.innerText = formatTraffic(bytesSent);
                 }, 800);
-
             } else {
                 body.classList.remove('connected-state');
-                statusText.style.color = '#ffffff';
                 statusText.innerText = 'ОТКЛЮЧЕНО';
                 vpnButton.innerText = 'Включить';
-                
-                clearInterval(timerInterval);
-                clearInterval(trafficInterval);
+                clearInterval(timerInterval); clearInterval(trafficInterval);
             }
+        });
+
+        // УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ (Чистый JS)
+        function openModal(modalId) { document.getElementById(modalId).classList.add('open'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
+
+        // Навешиваем события на кнопки открытия
+        document.getElementById('openConfigModalBtn').addEventListener('click', () => openModal('configModal'));
+        document.getElementById('openAboutBtn').addEventListener('click', () => openModal('aboutModal'));
+        document.getElementById('openPrivacyBtn').addEventListener('click', () => openModal('privacyModal'));
+        document.getElementById('openTermsBtn').addEventListener('click', () => openModal('termsModal'));
+
+        // Кнопки внутри модалок
+        document.getElementById('saveConfigBtn').addEventListener('click', () => {
+            if(configUrlInput.value.trim() !== "") {
+                currentConfigName.innerText = "Конфиг: " + configUrlInput.value.substring(0, 18) + "...";
+            }
+            closeModal('configModal'); configUrlInput.value = '';
+        });
+        document.getElementById('resetConfigBtn').addEventListener('click', () => {
+            currentConfigName.innerText = "Базовая конфигурация";
+            closeModal('settingsScreenModal'); // В случае если кнопка сброса была в другой модалке
+        });
+
+        // Переключение вкладок (Главная / Настройки)
+        tabMain.addEventListener('click', () => {
+            tabMain.classList.add('active'); tabSettings.classList.remove('active');
+            mainScreen.classList.remove('hidden'); settingsScreen.classList.add('hidden');
+        });
+        tabSettings.addEventListener('click', () => {
+            tabSettings.classList.add('active'); tabMain.classList.remove('active');
+            settingsScreen.classList.remove('hidden'); mainScreen.classList.add('hidden');
+        });
+
+        // Закрытие модалок по клику на фон
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) { closeModal(e.target.id); }
         });
     </script>
 </body>
