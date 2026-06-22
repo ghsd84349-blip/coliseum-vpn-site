@@ -15,7 +15,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            overflow: hidden; /* Запрещаем скролл всего тела */
+            overflow: hidden;
         }
 
         /* Шапка сайта */
@@ -34,7 +34,7 @@
         .logo { font-size: 22px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; user-select: none;}
         .logo span { color: #CCFF00; }
 
-        /* Кнопка Плюсик для конфигураций — ИСПРАВЛЕНО ВЫРАВНИВАНИЕ */
+        /* Кнопка Плюсик для конфигураций */
         .add-config-btn {
             width: 42px;
             height: 42px;
@@ -46,12 +46,12 @@
             font-weight: 300;
             display: flex;
             align-items: center;
-            justify-content: center; /* Центрирование по горизонтали */
-            line-height: 1; /* Обнуление межстрочного интервала */
+            justify-content: center;
+            line-height: 1;
             cursor: pointer;
             transition: 0.3s;
             user-select: none;
-            padding-bottom: 4px; /* Микро-коррекция для идеального центра */
+            padding-bottom: 4px;
         }
         .add-config-btn:hover {
             background: #CCFF00;
@@ -85,10 +85,8 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .status-container { text-align: center; margin-bottom: 30px; user-select: none;}
-        .status-title { font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: #88888e; margin-bottom: 10px; }
-        .status-current { font-size: 32px; font-weight: 700; transition: color 0.3s;}
-        .config-sub { font-size: 14px; color: #88888e; margin-top: 5px; }
+        .status-container { text-align: center; margin-bottom: 40px; user-select: none;}
+        .status-current { font-size: 36px; font-weight: 700; transition: color 0.3s; text-transform: uppercase; letter-spacing: 1px;}
 
         .power-button {
             width: 200px;
@@ -110,7 +108,7 @@
         .timer-display {
             font-size: 40px;
             font-family: monospace;
-            margin-top: 20px;
+            margin-top: 25px;
             color: #ffffff;
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -162,7 +160,7 @@
         .settings-item .arrow { color: #444; font-size: 18px; font-weight: 300;}
         .settings-item.danger { color: #ff3333; }
 
-        /* ОБЩИЙ СТИЛЬ ДЛЯ МОДАЛЬНЫХ ОКОН (Конфиг и Тексты) */
+        /* ОБЩИЙ СТИЛЬ ДЛЯ МОДАЛЬНЫХ ОКОН */
         .modal {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -194,14 +192,12 @@
         .modal-content h3 { margin-bottom: 10px; font-size: 20px; text-transform: uppercase; color: #CCFF00; letter-spacing: 1px; }
         .modal-content p { font-size: 14px; color: #88888e; margin-bottom: 20px; line-height: 1.5; }
         
-        /* Поле ввода для конфига */
         .modal-content input {
             width: 100%; padding: 14px; background: #1a1a1f; border: 1px solid #222227;
             border-radius: 10px; color: #fff; font-size: 14px; margin-bottom: 20px;
         }
         .modal-content input:focus { border-color: #CCFF00; }
         
-        /* Текстовый блок для политик (со скроллом) */
         .policy-text {
             text-align: left;
             max-height: 300px;
@@ -260,9 +256,7 @@
         
         <div class="screen" id="mainScreen">
             <div class="status-container">
-                <div class="status-title">Конфигурация</div>
                 <div class="status-current" id="statusText">ОТКЛЮЧЕНО</div>
-                <div class="config-sub" id="currentConfigName">Базовая конфигурация</div>
             </div>
 
             <button class="power-button" id="vpnButton">Включить</button>
@@ -282,7 +276,7 @@
 
         <div class="screen hidden" id="settingsScreen">
             <div class="status-container">
-                <div class="status-title">Настройки</div>
+                <div class="status-current" style="font-size: 24px;">Настройки</div>
             </div>
             <div class="settings-list">
                 <div class="settings-item" id="openAboutBtn">
@@ -317,7 +311,7 @@
     <div class="modal" id="aboutModal">
         <div class="modal-content">
             <h3>Coliseum VPN</h3>
-            <p style="color: #fff; font-size: 16px;">Версия 1.0.0 (Gold Master)</p>
+            <p style="color: #fff; font-size: 16px; margin-bottom: 10px;">Версия 1.0.0 (Gold Master)</p>
             <p>Ультимативный VPN-клиент нового поколения. Разработано для обеспечения максимальной скорости доступа и шифрования трафика в рамках экосистемы Coliseum Arena.</p>
             <div class="modal-actions">
                 <button class="modal-btn btn-confirm" onclick="closeModal('aboutModal')">Понятно</button>
@@ -370,7 +364,6 @@
         const timerDisplay = document.getElementById('timer');
         const receivedText = document.getElementById('receivedText');
         const sentText = document.getElementById('sentText');
-        const currentConfigName = document.getElementById('currentConfigName');
         const configUrlInput = document.getElementById('configUrlInput');
         
         // Вкладки
@@ -388,6 +381,7 @@
         let bytesSent = 0;
 
         function formatTraffic(bytes) {
+            if (bytes === 0) return "0 КБ";
             if (bytes < 1024) return bytes + " Б";
             let kb = bytes / 1024;
             if (kb < 1024) return kb.toFixed(1) + " КБ";
@@ -398,12 +392,14 @@
         vpnButton.addEventListener('click', () => {
             isConnected = !isConnected;
             if (isConnected) {
+                // ВКЛЮЧЕНИЕ VPN
                 body.classList.add('connected-state');
                 statusText.innerText = 'ПОДКЛЮЧЕНО';
                 vpnButton.innerText = 'Выключить';
                 seconds = 0; bytesReceived = 0; bytesSent = 0;
                 timerDisplay.innerText = "00:00:00";
                 
+                // Запуск таймера
                 timerInterval = setInterval(() => {
                     seconds++;
                     let hrs = Math.floor(seconds / 3600);
@@ -412,6 +408,7 @@
                     timerDisplay.innerText = `${hrs < 10 ? '0'+hrs : hrs}:${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs}`;
                 }, 1000);
 
+                // Запуск счетчиков трафика
                 trafficInterval = setInterval(() => {
                     bytesReceived += Math.floor(Math.random() * 450000) + 50000;
                     bytesSent += Math.floor(Math.random() * 50000) + 5000;
@@ -419,33 +416,44 @@
                     sentText.innerText = formatTraffic(bytesSent);
                 }, 800);
             } else {
+                // ВЫКЛЮЧЕНИЕ VPN — ТЕПЕРЬ ВСЁ СБРАСЫВАЕТСЯ СРАЗУ В 0
                 body.classList.remove('connected-state');
                 statusText.innerText = 'ОТКЛЮЧЕНО';
                 vpnButton.innerText = 'Включить';
-                clearInterval(timerInterval); clearInterval(trafficInterval);
+                
+                // Останавливаем расчеты
+                clearInterval(timerInterval); 
+                clearInterval(trafficInterval);
+                
+                // Обнуляем данные в памяти
+                seconds = 0;
+                bytesReceived = 0;
+                bytesSent = 0;
+                
+                // Моментально выводим 0 на экран
+                receivedText.innerText = "0 КБ";
+                sentText.innerText = "0 КБ";
+                timerDisplay.innerText = "00:00:00";
             }
         });
 
-        // УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ (Чистый JS)
+        // УПРАВЛЕНИЕ МОДАЛЬНЫМИ ОКНАМИ
         function openModal(modalId) { document.getElementById(modalId).classList.add('open'); }
         function closeModal(modalId) { document.getElementById(modalId).classList.remove('open'); }
 
-        // Навешиваем события на кнопки открытия
         document.getElementById('openConfigModalBtn').addEventListener('click', () => openModal('configModal'));
         document.getElementById('openAboutBtn').addEventListener('click', () => openModal('aboutModal'));
         document.getElementById('openPrivacyBtn').addEventListener('click', () => openModal('privacyModal'));
         document.getElementById('openTermsBtn').addEventListener('click', () => openModal('termsModal'));
 
-        // Кнопки внутри модалок
         document.getElementById('saveConfigBtn').addEventListener('click', () => {
             if(configUrlInput.value.trim() !== "") {
-                currentConfigName.innerText = "Конфиг: " + configUrlInput.value.substring(0, 18) + "...";
+                alert("Новая конфигурация успешно добавлена!");
             }
             closeModal('configModal'); configUrlInput.value = '';
         });
         document.getElementById('resetConfigBtn').addEventListener('click', () => {
-            currentConfigName.innerText = "Базовая конфигурация";
-            closeModal('settingsScreenModal'); // В случае если кнопка сброса была в другой модалке
+            alert("Все конфигурации сброшены до начальных.");
         });
 
         // Переключение вкладок (Главная / Настройки)
