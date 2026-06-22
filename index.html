@@ -3,136 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coliseum VPN — Рабочий интерфейс</title>
+    <title>Coliseum VPN — Панель управления</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        
         body {
-            background-color: #0a0a0c;
+            background-color: #070709;
             color: #ffffff;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             min-height: 100vh;
-        }
-        .phone-mockup {
-            width: 360px;
-            height: 740px;
-            background: #111114;
-            border: 4px solid #222227;
-            border-radius: 40px;
-            padding: 30px 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: space-between;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            position: relative;
-        }
-        .header {
-            text-align: center;
-            width: 100%;
-        }
-        .logo { font-size: 24px; font-weight: bold; letter-spacing: 2px; }
-        .logo span { color: #CCFF00; }
-        .status-text { color: #88888e; margin-top: 10px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
-        
-        /* Интерактивная кнопка подключения */
-        .vpn-button-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .power-btn {
-            width: 160px;
-            height: 160px;
-            border-radius: 50%;
-            background: #1a1a1f;
-            border: 3px solid #222227;
-            color: #ffffff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            outline: none;
-        }
-        .power-btn:active { transform: scale(0.95); }
-        
-        /* Состояния VPN (Включен / Выключен) */
-        .phone-mockup.connected .power-btn {
-            border-color: #CCFF00;
-            box-shadow: 0 0 40px rgba(204, 255, 0, 0.5);
-            color: #CCFF00;
-        }
-        .phone-mockup.connected .status-text {
-            color: #CCFF00;
-            font-weight: bold;
-        }
-        
-        .timer {
-            font-size: 32px;
-            font-weight: bold;
-            font-family: monospace;
-            color: #88888e;
-            visibility: hidden;
-        }
-        .phone-mockup.connected .timer {
-            visibility: visible;
-            color: #ffffff;
+            overflow-x: hidden;
         }
 
-        .footer-info {
-            text-align: center;
+        /* Шапка в стиле премиум-сервисов */
+        header {
             width: 100%;
-            border-top: 1px solid #222227;
-            padding-top: 15px;
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(11, 11, 14, 0.5);
+            backdrop-filter: blur(10px);
         }
-        .location { font-size: 16px; color: #ffffff; }
-        .ip { font-size: 12px; color: #88888e; margin-top: 5px; }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .logo span { color: #CCFF00; }
+
+        .server-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .server-status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #ff3333;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        /* Главная рабочая область — НА ВЕСЬ ЭКРАН */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .status-container {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .status-title {
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #88888e;
+            margin-bottom: 10px;
+        }
+
+        .status-current {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            transition: color 0.3s;
+        }
+
+        /* Большая интерактивная кнопка по центру экрана */
+        .action-area {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .power-button {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: #111115;
+            border: 4px solid #222227;
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            outline: none;
+        }
+
+        .power-button:hover {
+            transform: scale(1.02);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Стили при подключении (Интерфейс оживает) */
+        body.connected-state {
+            background: radial-gradient(circle at center, #0e1405 0%, #070709 100%);
+        }
+
+        body.connected-state .power-button {
+            border-color: #CCFF00;
+            box-shadow: 0 0 50px rgba(204, 255, 0, 0.3);
+            color: #CCFF00;
+        }
+
+        body.connected-state .status-current {
+            color: #CCFF00;
+        }
+
+        body.connected-state .server-status-dot {
+            background-color: #CCFF00;
+            box-shadow: 0 0 10px #CCFF00;
+        }
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: 300;
+            font-family: monospace;
+            color: #ffffff;
+            margin-top: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s ease;
+        }
+
+        body.connected-state .timer-display {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Информационная панель внизу страницы */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #88888e;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Адаптивность для мобильных телефонов */
+        @media (max-width: 600px) {
+            header { padding: 20px; }
+            .info-grid { grid-template-columns: 1fr; gap: 10px; }
+            .status-current { font-size: 28px; }
+            .power-button { width: 180px; height: 180px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="phone-mockup" id="vpnCard">
-        <div class="header">
-            <div class="logo">COLISEUM<span>VPN</span></div>
-            <div class="status-text" id="statusLabel">Отключено</div>
+    <header>
+        <div class="logo">COLISEUM<span>VPN</span></div>
+        <div class="server-badge">
+            <div class="server-status-dot" id="statusDot"></div>
+            <span id="locationLabel">Авто-выбор</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="status-container">
+            <div class="status-title">Статус соединения</div>
+            <div class="status-current" id="statusText">ЗАЩИТА ОТКЛЮЧЕНА</div>
         </div>
 
-        <div class="vpn-button-container">
-            <button class="power-btn" id="connectBtn"><span>Включить</span></button>
+        <div class="action-area">
+            <button class="power-button" id="mainButton">Подключить</button>
         </div>
 
-        <div class="timer" id="timerDisplay">00:00:00</div>
+        <div class="timer-display" id="timer">00:00:00</div>
 
-        <div class="footer-info">
-            <div class="location" id="locationLabel">Выбор сервера: Авто</div>
-            <div class="ip" id="ipLabel">Ваш IP: 192.168.1.1</div>
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-label">Текущий IP-адрес</div>
+                <div class="info-value" id="ipText">192.168.1.1</div>
+            </div>
+            <div class="info-card">
+                <div class="info-label">Протокол безопасности</div>
+                <div class="info-value">WireGuard (Кастомный)</div>
+            </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        const connectBtn = document.getElementById('connectBtn');
-        const vpnCard = document.getElementById('vpnCard');
-        const statusLabel = document.getElementById('statusLabel');
-        const timerDisplay = document.getElementById('timerDisplay');
+        const mainButton = document.getElementById('mainButton');
+        const body = document.body;
+        const statusText = document.getElementById('statusText');
+        const timerDisplay = document.getElementById('timer');
         const locationLabel = document.getElementById('locationLabel');
-        const ipLabel = document.getElementById('ipLabel');
-        
+        const ipText = document.getElementById('ipText');
+        const statusDot = document.getElementById('statusDot');
+
         let isConnected = false;
         let timerInterval = null;
         let seconds = 0;
 
-        function updateTimer() {
+        function runTimer() {
             seconds++;
             let hrs = Math.floor(seconds / 3600);
             let mins = Math.floor((seconds - (hrs * 3600)) / 60);
@@ -145,30 +255,26 @@
             timerDisplay.innerText = `${hrs}:${mins}:${secs}`;
         }
 
-        connectBtn.addEventListener('click', () => {
+        mainButton.addEventListener('click', () => {
             isConnected = !isConnected;
-            
+
             if (isConnected) {
-                // Включение VPN
-                vpnCard.classList.add('connected');
-                statusLabel.innerText = 'Подключено';
-                connectBtn.querySelector('span').innerText = 'Выключить';
-                locationLabel.innerText = 'Сервер: Германия (Франкфурт)';
-                ipLabel.innerText = 'Защищенный IP: 185.220.101.5';
+                body.classList.add('connected-state');
+                statusText.innerText = 'ПОД ЗАЩИТОЙ';
+                mainButton.innerText = 'Отключить';
+                locationLabel.innerText = 'Германия (Франкфурт)';
+                ipText.innerText = '185.220.101.5';
                 
-                // Запуск таймера
                 seconds = 0;
                 timerDisplay.innerText = "00:00:00";
-                timerInterval = setInterval(updateTimer, 1000);
+                timerInterval = setInterval(runTimer, 1000);
             } else {
-                // Выключение VPN
-                vpnCard.classList.remove('connected');
-                statusLabel.innerText = 'Отключено';
-                connectBtn.querySelector('span').innerText = 'Включить';
-                locationLabel.innerText = 'Выбор сервера: Авто';
-                ipLabel.innerText = 'Ваш IP: 192.168.1.1';
+                body.classList.remove('connected-state');
+                statusText.innerText = 'ЗАЩИТА ОТКЛЮЧЕНА';
+                mainButton.innerText = 'Подключить';
+                locationLabel.innerText = 'Авто-выбор';
+                ipText.innerText = '192.168.1.1';
                 
-                // Остановка таймера
                 clearInterval(timerInterval);
             }
         });
